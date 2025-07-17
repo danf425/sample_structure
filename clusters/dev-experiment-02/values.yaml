@@ -1,0 +1,74 @@
+---
+argo-cluster:
+  defaults:
+    accountNumber: &accountNumber "dddddd"
+    superCellName: dev-experiment-02
+    argoRepoURL: https://github.com/
+    environment: dev
+    region: us-east-1
+    availabilityZones:
+      - id: az-1
+        fullName: &az1 us-east-1a
+      - id: az-2
+        fullName: &az2 us-east-1b
+      - id: az-3
+        fullName: &az3 us-east-1c
+
+  # Workaround brackets can't be used in template
+  applicationSetVar:
+    url: "{{url}}"
+    cluster: "{{cluster}}"
+
+  clusterCell:
+    - cluster: dev-experiment-02
+      clusterVersion: "1.28"
+      #defaultsRepoTag: <tagged version>
+      url: dfs
+      shorturl: 0fsdfdsf
+      accountNumber: *accountNumber
+      availabilityZoneList: "'{us-east-1a,us-east-1b,us-east-1c}'"
+      # default private subnets
+      subnetList: "fdsfs"
+      # default public subnets
+      publicSubnetList: "fdsfd3"
+
+  # Optional: List of applications to NOT install
+  ignore_items:
+    - scalyr-agent
+   # - cilium
+
+  deployed_applications:
+    - name: backend-services
+      helm: false
+      sync: false
+      namespace: backend-services
+      path: infrastructure/backend-services/base
+      project: infrastructure
+### NSQd Global Configuration
+    - name: nsqd-config
+      namespace: backend-services
+      repoURL: fdsfdsf
+      path: "."
+      extraHelmParameters:
+        - name: nsqlookupd.tcp_addresses[0]
+          value: sdfsdf
+        - name: nsqlookupd.tcp_addresses[1]
+          value: sdfdfs
+        - name: nsqlookupd.tcp_addresses[2]
+          value: fdsfsd
+### Java Echo Server
+    - name: java-echo-server
+      repoURL: https://github.com/lkdfjala/java-echo-server.git
+      namespace: backend-services
+      targetRevision: v0.25.2.1
+      featureFlags:
+        containerMap: true
+      extraHelmParameters:
+        - name: k8s-deployment.service.nlb.dnsWeight
+          value: "0"
+### HAproxy Ingress Controller
+    - name: haproxy-ingress
+      repoURL: https://github.com/lkdfjala/haproxy-ingress-chart
+      path: deploy/chart
+      targetRevision: mk-config-testing
+      project: backend-services
